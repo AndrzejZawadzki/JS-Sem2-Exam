@@ -1,0 +1,14 @@
+<div class="board">
+  <div *ngFor="let row of board">
+    <span
+      *ngFor="let cell of row"
+      [ngClass]="{
+        ball: cell === '1',
+        wall: cell === 'X',
+        teleport: cell === 'Y'
+      }"
+    >
+      {{ cell }}
+    </span>
+  </div>
+</div>

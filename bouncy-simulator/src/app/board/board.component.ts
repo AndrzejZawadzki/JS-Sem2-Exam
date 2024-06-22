@@ -29,8 +29,9 @@ const INITIAL_BOARD = [
 })
 export class BoardComponent implements OnInit {
   board: string[][] = JSON.parse(JSON.stringify(INITIAL_BOARD));
-  ballPosition: { x: number; y: number } = { x: 1, y: 1 };
-  ballDirection: { x: number; y: number } = { x: 2, y: 2 };
+  ballPosition: { x: number; y: number } = { x: 0, y: 0 };
+  ballDirection: { x: number; y: number } = { x: 1, y: 1 };
+  intervalId: any = null;
 
   constructor() {}
 
@@ -43,7 +44,7 @@ export class BoardComponent implements OnInit {
       for (let j = 0; j < this.board[i].length; j++) {
         if (this.board[i][j] === '1') {
           this.ballPosition = { x: i, y: j };
-          this.ballDirection = { x: 2, y: 2 }; // Initial direction: bottom right
+          this.ballDirection = { x: 1, y: 1 }; // Initial direction: bottom right
           return;
         }
       }
@@ -56,24 +57,44 @@ export class BoardComponent implements OnInit {
 
     this.board[x][y] = '0'; // Clear current position
 
-    x += dx;
-    y += dy;
+    let newX = x + dx;
+    let newY = y + dy;
 
-    // Check for collisions
-    if (this.board[x][y] === 'X') {
+    // Check for collisions with boundaries and reverse direction if necessary
+    if (this.board[newX][newY] === 'X') {
       // Reverse direction
       dx *= -1;
       dy *= -1;
-    } else if (this.board[x][y] === 'Y') {
+      newX = x + dx;
+      newY = y + dy;
+    } else if (this.board[newX][newY] === 'Y') {
       // Randomize direction
       dx = Math.random() > 0.5 ? 1 : -1;
       dy = Math.random() > 0.5 ? 1 : -1;
-      this.board[x][y] = '0'; // Change 'Y' to '0'
+      this.board[newX][newY] = '0'; // Change 'Y' to '0'
     }
 
     // Update ball position and direction
-    this.ballPosition = { x, y };
+    this.ballPosition = { x: newX, y: newY };
     this.ballDirection = { x: dx, y: dy };
-    this.board[x][y] = '1'; // Set new position
+    this.board[newX][newY] = '1'; // Set new position
+  }
+
+  start() {
+    this.stop(); // Ensure any existing interval is cleared
+    this.intervalId = setInterval(() => this.moveBall(), 500);
+  }
+
+  stop() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
+  }
+
+  reset() {
+    this.stop();
+    this.board = JSON.parse(JSON.stringify(INITIAL_BOARD));
+    this.initializeBall();
   }
 }
